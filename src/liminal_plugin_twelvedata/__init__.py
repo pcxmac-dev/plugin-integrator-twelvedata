@@ -2,11 +2,13 @@
 (its Basic plan: 8 API credits a minute, 800 a day), two years back, kept up to date a UTC day at a
 time.
 
-A Liminal plugin released on its own (liminal_lib.sources.registry: Provider), registered under the
-entry point group `liminal.providers` as `twelvedata`: one feed, `twelvedata`, a forex feed on its own
-key and limits like Tiingo's forex feed, its own market (`twelvedata`: its data is Twelve Data's own,
-not a copy of another feed's). It relies on plugin API 1.12 and nothing of the app outside it; its
-version is this distribution's (pyproject.toml), so the record's version is left empty.
+A Liminal plugin released on its own, registered under the entry point group `liminal.providers` as
+`twelvedata`: one feed, `twelvedata`, a forex feed on its own key and limits like Tiingo's forex feed,
+its own market (`twelvedata`: its data is Twelve Data's own, not a copy of another feed's); `PLUGIN`
+is an instance of `TwelveDataPlugin` on the class contract (plugin API 2.0, liminal-lib 1.3.0:
+liminal_lib.sources.plugin.FeedPlugin; what it declares its class attributes, its plan's publication
+delay among them, what it does its methods). It relies on the contract and nothing of the app outside
+it; its version is this distribution's (pyproject.toml), so the instance's version is left empty.
 
 What Twelve Data's public reference says (twelvedata.com/docs/market-data/time-series, read
 2026-11-02, the one page read while building this; no keyed request was sent): `interval=1min`;
@@ -25,7 +27,8 @@ code 400 "No data is available on the specified dates" (read as an empty window)
 from __future__ import annotations
 
 from liminal_lib.config import Tier
-from liminal_lib.sources.registry import KeyVar, Provider, limiter, machine_caps
+from liminal_lib.freshness import Delay
+from liminal_lib.sources.registry import FeedPlugin, KeyVar, limiter, machine_caps
 from .client import TwelveDataClient, TwelveDataSource
 
 API = "https://api.twelvedata.com"
@@ -49,23 +52,45 @@ def api_key(settings) -> str | None:
     return (settings.env.get(KEY) or "").strip() or None
 
 
-def build(settings, request_budget):
-    key = api_key(settings)
-    client = TwelveDataClient(API, key=key, request_budget=request_budget,
-                              rate_limiter=limiter("twelvedata", settings, key))
-    return TwelveDataSource(machine_caps(client, "twelvedata", settings, key), has_key=bool(key))
+class TwelveDataPlugin(FeedPlugin):
+    """The feed as a class (plugin API 2.0): what it declares its class attributes, what it does its
+    methods (`build`: its source on a keyed client; `has_keys`, `rate`, `markets`), the rest the
+    contract's defaults."""
+
+    api = "2.0"  # the contract it needs (the class contract; sources.http, sources.archive, sources.base.Page, delays); its version: the distribution's
+    name = "twelvedata"
+    title = "Twelve Data"
+    assets = frozenset({"fx"})
+    order = 120
+    about = "currency pairs' 1-minute bars from Twelve Data, two years back (a free account key: 8 requests a minute, 800 a day)"
+    keys = (KeyVar(KEY),)
+    signup = "twelvedata.com: a free account's API key (its dashboard)"
+    kind = "vendor"
+    archival = False
+    tier = TIER
+    per_run, per_day = PER_RUN, PER_DAY
+    limits = "Basic (free): 8 API credits a minute, 800 a day; a time_series request of one symbol is 1 credit"
+    provides = {"fx": ("minute",)}
+    per_request = {"minute": 5000}  # outputsize's most: up to 5,000 minutes a request
+    missing_keys_note = "key not set: Twelve Data's forex comes with TWELVEDATA_API_KEY"
+    # when its data is published (the library's freshness.PLAN_DELAYS row for twelvedata-free, declared here
+    # too): whole UTC days, through the day before, like Tiingo's forex
+    delays = {"twelvedata-free": {"fx": Delay("utc_day")}}
+
+    def build(self, settings, request_budget):
+        key = api_key(settings)
+        client = TwelveDataClient(API, key=key, request_budget=request_budget,
+                                  rate_limiter=limiter(self.name, settings, key))
+        return TwelveDataSource(machine_caps(client, self.name, settings, key), has_key=bool(key))
+
+    def has_keys(self, settings):
+        return bool(api_key(settings))
+
+    def rate(self, settings):
+        return RATE  # the plan's 8 a minute, kept in 62 s
+
+    def markets(self, settings):
+        return {"fx": self.name}  # its own market: its data is its own, not a copy of another feed's
 
 
-PLUGIN = Provider(
-    api="1.12",  # the contract it needs (sources.http, sources.archive, sources.base.Page); its version: the distribution's
-    name="twelvedata", title="Twelve Data", build=build, assets=frozenset({"fx"}), order=120,
-    about="currency pairs' 1-minute bars from Twelve Data, two years back (a free account key: 8 requests a minute, 800 a day)",
-    keys=(KeyVar(KEY),), signup="twelvedata.com: a free account's API key (its dashboard)",
-    kind="vendor", archival=False, tier=TIER, per_run=PER_RUN, per_day=PER_DAY,
-    limits="Basic (free): 8 API credits a minute, 800 a day; a time_series request of one symbol is 1 credit",
-    provides={"fx": ("minute",)}, per_request={"minute": 5000},  # outputsize's most: up to 5,000 minutes a request
-    missing_keys_note="key not set: Twelve Data's forex comes with TWELVEDATA_API_KEY",
-    has_keys=lambda s: bool(api_key(s)),
-    rate=lambda settings: RATE,  # the plan's 8 a minute, kept in 62 s
-    markets=lambda settings: {"fx": "twelvedata"},  # its own market: its data is its own, not a copy of another feed's
-)
+PLUGIN = TwelveDataPlugin()

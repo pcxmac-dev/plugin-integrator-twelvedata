@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 (2026-11-03)
+
+The plugin is a class on plugin API 2.0 (the class contract, liminal-lib 1.3.0; the user: "all the plugins under
+liminal should basically follow inheritance/oop paradigm"): `PLUGIN` is an instance of `TwelveDataPlugin`, a
+`FeedPlugin`, what it declares its class attributes (its key, its free plan and caps, its own market ...) and what
+it does its methods (`build`, `has_keys`, `rate`, `markets`). It declares its plan's publication delay itself
+(`delays`: `twelvedata-free`, whole UTC days; the library's row stays). Every fact, limit and string is as in
+1.0.0. Its version is the release's, 0.2.0, as every Liminal plugin's on `release/0.2.0`; requires liminal-lib
+1.3.0.
+
 ## 1.0.0 (2026-11-02)
 
 The first release (the user: "if new sources, create a new plugin"; Twelve Data is the FX addition): one feed,

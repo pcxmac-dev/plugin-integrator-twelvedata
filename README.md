@@ -21,7 +21,7 @@ as `package: liminal-plugin-twelvedata`, with this package's version.
 Into the app's environment, from the app's folder:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install "liminal-plugin-twelvedata @ git+https://github.com/pcxmac-dev/liminal-plugin-twelvedata@v1.0.0"
+.venv\Scripts\python.exe -m pip install "liminal-plugin-twelvedata @ git+https://github.com/pcxmac-dev/liminal-plugin-twelvedata@v0.2.0"
 ```
 
 or with the app's plugins (`pip install -e ".[plugins]"` in liminal-app). The app loads it on its next
@@ -36,10 +36,11 @@ it the feed serves nothing and sends nothing.
 
 ## Compatibility
 
-It is written for plugin API 1.12 (`PLUGIN.api`; liminal-lib 1.2.0 or later: `sources.http`,
-`sources.archive`, `sources.base.Page`, and the tier's publication delay the library knows by name,
-`twelvedata-free`). An app offering 1.12 or a later 1.x loads it; an app of another major, or one
-older than 1.12, leaves it out and says why on the Plugins view.
+It is written for plugin API 2.0, the class contract (`PLUGIN`, an instance of `TwelveDataPlugin`, a
+`FeedPlugin`; liminal-lib 1.3.0 or later: `sources.http`, `sources.archive`, `sources.base.Page`, and the
+plan's publication delay the feed declares itself, `delays`: `twelvedata-free`, whole UTC days). An app
+offering 2.0 or a later 2.x loads it; an app of another major leaves it out and says why on the Plugins
+view.
 
 ## Develop
 

@@ -14,7 +14,9 @@ from liminal_lib import freshness
 from liminal_lib.collector import history_floor
 from liminal_lib.config import load_settings
 from liminal_lib.errors import NotEntitled, RateLimited, SourceError
+from liminal_lib.freshness import Delay
 from liminal_lib.sources import feed_profiles, is_archive, markets, provider, rate_window, registry, supports
+from liminal_lib.sources.registry import FeedPlugin
 from liminal_lib.symbols import resolve
 
 import liminal_plugin_twelvedata as twelvedata
@@ -269,11 +271,11 @@ def test_the_app_loads_it_from_this_package_with_its_own_version():
     assert p is not None, dict(registry.errors())
     assert p.origin in {"package: liminal-plugin-twelvedata (liminal_plugin_twelvedata)",
                         "plugins/liminal-plugin-twelvedata (liminal_plugin_twelvedata)"}  # its package, or its checkout in the workspace's plugin directory
-    assert p.version == version("liminal-plugin-twelvedata") and p.api == "1.12"
+    assert p.version == version("liminal-plugin-twelvedata") and p.api == "2.0"
     assert registry.api_refusal(p.api) is None and twelvedata.PLUGIN.version == ""
     assert not [why for where, why in registry.errors() if "twelvedata" in where or "twelvedata" in why]
     row = {r["name"]: r for r in registry.menu()}["twelvedata"]
-    assert (row["version"], row["api"], row["archive"], row["assets"]) == (version("liminal-plugin-twelvedata"), "1.12", False, ["fx"])
+    assert (row["version"], row["api"], row["archive"], row["assets"]) == (version("liminal-plugin-twelvedata"), "2.0", False, ["fx"])
     assert [k["name"] for k in row["keys"]] == [KEY] and row["keys"][0]["secret"] and row["feeds"] == []
     assert registry.plugin_feeds("twelvedata") == ["twelvedata"] and registry.plugin_of("twelvedata") == "twelvedata"
     assert KEY in registry.variables()
@@ -308,7 +310,22 @@ def test_it_keeps_its_facts(monkeypatch):
     held = []
     monkeypatch.setattr(twelvedata, "limiter", lambda name, st, key: held.append(("window", name, key)))
     monkeypatch.setattr(twelvedata, "machine_caps", lambda client, name, st, key: held.append(("day", name, key)) or client)
-    source = twelvedata.build(s, 5)
+    source = twelvedata.PLUGIN.build(s, 5)
     assert held == [("window", "twelvedata", "k"), ("day", "twelvedata", "k")] and source.name == "twelvedata" and source.has_key
     assert source.client.key == "k" and source.client.request_budget == 5 and source.client.base_url == "https://api.twelvedata.com"
-    assert not twelvedata.build(load_settings(env={}, env_file=None), 5).has_key
+    assert not twelvedata.PLUGIN.build(load_settings(env={}, env_file=None), 5).has_key
+
+
+def test_it_is_a_class_on_plugin_api_2_0():
+    """The plugin is an instance of its class (plugin API 2.0, liminal-lib 1.3.0): what it declares its class
+    attributes, what it does its methods; the registry loads it as that class."""
+    assert isinstance(twelvedata.PLUGIN, twelvedata.TwelveDataPlugin) and isinstance(twelvedata.PLUGIN, FeedPlugin)
+    assert twelvedata.PLUGIN.api == "2.0" and not twelvedata.PLUGIN.is_record
+    p = registry.reload()["twelvedata"]
+    assert type(p) is twelvedata.TwelveDataPlugin and p.api == "2.0" and p.name == "twelvedata"
+    # the hooks it gives, the rest the contract's defaults
+    assert p.gives("build") and p.gives("has_keys") and p.gives("rate") and p.gives("markets")
+    assert not p.gives("view") and not p.gives("scan") and not p.gives("carries") and not p.has_settings
+    # it declares its plan's publication delay itself, the library's row for it still in place
+    assert p.delays == {"twelvedata-free": {"fx": Delay("utc_day")}}
+    assert p.delays["twelvedata-free"] == freshness.PLAN_DELAYS["twelvedata-free"]
