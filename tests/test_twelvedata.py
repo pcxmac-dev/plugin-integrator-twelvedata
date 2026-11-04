@@ -10,18 +10,18 @@ from importlib.metadata import version
 import pytest
 import requests
 
-from liminal_lib import freshness
-from liminal_lib.collector import history_floor
-from liminal_lib.config import load_settings
-from liminal_lib.errors import NotEntitled, RateLimited, SourceError
-from liminal_lib.freshness import Delay
-from liminal_lib.sources import feed_profiles, is_archive, markets, provider, rate_window, registry, supports
-from liminal_lib.sources.registry import FeedPlugin
-from liminal_lib.symbols import resolve
+from liminal_libs import freshness
+from liminal_libs.collector import history_floor
+from liminal_libs.config import load_settings
+from liminal_libs.errors import NotEntitled, RateLimited, SourceError
+from liminal_libs.freshness import Delay
+from liminal_libs.sources import feed_profiles, is_archive, markets, provider, rate_window, registry, supports
+from liminal_libs.sources.registry import FeedPlugin
+from liminal_libs.symbols import resolve
 
-import liminal_plugin_twelvedata as twelvedata
-from liminal_plugin_twelvedata import KEY, PER_DAY, PER_RUN, RATE, TIER, api_key
-from liminal_plugin_twelvedata.client import (EPOCH, TwelveDataClient, TwelveDataSource, checked, stamp, stored_pair,
+import plugin_integrator_twelvedata as twelvedata
+from plugin_integrator_twelvedata import KEY, PER_DAY, PER_RUN, RATE, TIER, api_key
+from plugin_integrator_twelvedata.client import (EPOCH, TwelveDataClient, TwelveDataSource, checked, stamp, stored_pair,
                                               twelvedata_pair, utc_ms)
 
 from .conftest import FakeResponse, FakeSession
@@ -269,13 +269,13 @@ def test_the_app_loads_it_from_this_package_with_its_own_version():
     assert twelvedata.PLUGIN.name == "twelvedata" and not hasattr(twelvedata, "PLUGINS")
     p = provider("twelvedata")
     assert p is not None, dict(registry.errors())
-    assert p.origin in {"package: liminal-plugin-twelvedata (liminal_plugin_twelvedata)",
-                        "plugins/liminal-plugin-twelvedata (liminal_plugin_twelvedata)"}  # its package, or its checkout in the workspace's plugin directory
-    assert p.version == version("liminal-plugin-twelvedata") and p.api == "2.0"
+    assert p.origin in {"package: plugin-integrator-twelvedata (plugin_integrator_twelvedata)",
+                        "plugins/plugin-integrator-twelvedata (plugin_integrator_twelvedata)"}  # its package, or its checkout in the workspace's plugin directory
+    assert p.version == version("plugin-integrator-twelvedata") and p.api == "2.0"
     assert registry.api_refusal(p.api) is None and twelvedata.PLUGIN.version == ""
     assert not [why for where, why in registry.errors() if "twelvedata" in where or "twelvedata" in why]
     row = {r["name"]: r for r in registry.menu()}["twelvedata"]
-    assert (row["version"], row["api"], row["archive"], row["assets"]) == (version("liminal-plugin-twelvedata"), "2.0", False, ["fx"])
+    assert (row["version"], row["api"], row["archive"], row["assets"]) == (version("plugin-integrator-twelvedata"), "2.0", False, ["fx"])
     assert [k["name"] for k in row["keys"]] == [KEY] and row["keys"][0]["secret"] and row["feeds"] == []
     assert registry.plugin_feeds("twelvedata") == ["twelvedata"] and registry.plugin_of("twelvedata") == "twelvedata"
     assert KEY in registry.variables()
@@ -317,7 +317,7 @@ def test_it_keeps_its_facts(monkeypatch):
 
 
 def test_it_is_a_class_on_plugin_api_2_0():
-    """The plugin is an instance of its class (plugin API 2.0, liminal-lib 1.3.0): what it declares its class
+    """The plugin is an instance of its class (plugin API 2.0, liminal-libs 1.3.0): what it declares its class
     attributes, what it does its methods; the registry loads it as that class."""
     assert isinstance(twelvedata.PLUGIN, twelvedata.TwelveDataPlugin) and isinstance(twelvedata.PLUGIN, FeedPlugin)
     assert twelvedata.PLUGIN.api == "2.0" and not twelvedata.PLUGIN.is_record

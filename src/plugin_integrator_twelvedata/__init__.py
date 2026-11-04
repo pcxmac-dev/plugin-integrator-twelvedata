@@ -5,8 +5,8 @@ time.
 A Liminal plugin released on its own, registered under the entry point group `liminal.providers` as
 `twelvedata`: one feed, `twelvedata`, a forex feed on its own key and limits like Tiingo's forex feed,
 its own market (`twelvedata`: its data is Twelve Data's own, not a copy of another feed's); `PLUGIN`
-is an instance of `TwelveDataPlugin` on the class contract (plugin API 2.0, liminal-lib 1.3.0:
-liminal_lib.sources.plugin.FeedPlugin; what it declares its class attributes, its plan's publication
+is an instance of `TwelveDataPlugin` on the class contract (plugin API 2.0, liminal-libs 1.3.0:
+liminal_libs.sources.plugin.FeedPlugin; what it declares its class attributes, its plan's publication
 delay among them, what it does its methods). It relies on the contract and nothing of the app outside
 it; its version is this distribution's (pyproject.toml), so the instance's version is left empty.
 
@@ -26,9 +26,9 @@ it comes with HTTP 200 or with its code as the HTTP status), and a range with no
 code 400 "No data is available on the specified dates" (read as an empty window)."""
 from __future__ import annotations
 
-from liminal_lib.config import Tier
-from liminal_lib.freshness import Delay
-from liminal_lib.sources.registry import FeedPlugin, KeyVar, limiter, machine_caps
+from liminal_libs.config import Tier
+from liminal_libs.freshness import Delay
+from liminal_libs.sources.registry import FeedPlugin, KeyVar, limiter, machine_caps
 from .client import TwelveDataClient, TwelveDataSource
 
 API = "https://api.twelvedata.com"

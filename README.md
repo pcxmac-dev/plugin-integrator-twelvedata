@@ -1,6 +1,6 @@
-# liminal-plugin-twelvedata
+# plugin-integrator-twelvedata
 
-Twelve Data for [Liminal](https://github.com/pcxmac-dev/liminal-app): currency pairs' 1-minute bars
+Twelve Data for [Liminal](https://github.com/pcxmac-dev/liminal-charts): currency pairs' 1-minute bars
 (`EURUSD`, `USDJPY`, `XAUUSD`: open, high, low, close, no volume) from Twelve Data's `/time_series`, on
 a free account key. One feed, `twelvedata`, its own market: its data is Twelve Data's own, not a copy of
 another feed's. It is live: pairs are kept up to date a whole UTC day at a time (the plan's publication
@@ -13,18 +13,18 @@ request asks for three whole UTC days of minutes (4,320, inside the 5,000 one re
 pair's two years take about 240 requests, and a day's upkeep one.
 
 A Liminal provider plugin released on its own. The app finds it through the entry point group
-`liminal.providers` and lists it on the Plugins view and in `liminal plugins`
-as `package: liminal-plugin-twelvedata`, with this package's version.
+`liminal.providers` and lists it on the Plugins view and in `liminal-charts plugins`
+as `package: plugin-integrator-twelvedata`, with this package's version.
 
 ## Install
 
 Into the app's environment, from the app's folder:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install "liminal-plugin-twelvedata @ git+https://github.com/pcxmac-dev/liminal-plugin-twelvedata@v0.2.0"
+.venv\Scripts\python.exe -m pip install "plugin-integrator-twelvedata @ git+https://github.com/pcxmac-dev/plugin-integrator-twelvedata@v0.2.0"
 ```
 
-or with the app's plugins (`pip install -e ".[plugins]"` in liminal-app). The app loads it on its next
+or with the app's plugins (`pip install -e ".[plugins]"` in liminal-charts). The app loads it on its next
 start.
 
 ## Key
@@ -37,7 +37,7 @@ it the feed serves nothing and sends nothing.
 ## Compatibility
 
 It is written for plugin API 2.0, the class contract (`PLUGIN`, an instance of `TwelveDataPlugin`, a
-`FeedPlugin`; liminal-lib 1.3.0 or later: `sources.http`, `sources.archive`, `sources.base.Page`, and the
+`FeedPlugin`; liminal-libs 1.3.0 or later: `sources.http`, `sources.archive`, `sources.base.Page`, and the
 plan's publication delay the feed declares itself, `delays`: `twelvedata-free`, whole UTC days). An app
 offering 2.0 or a later 2.x loads it; an app of another major leaves it out and says why on the Plugins
 view.
@@ -46,7 +46,7 @@ view.
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install "liminal-lib @ git+https://github.com/pcxmac-dev/liminal-lib@main"
+.venv\Scripts\python.exe -m pip install "liminal-libs @ git+https://github.com/pcxmac-dev/liminal-libs@main"
 .venv\Scripts\python.exe -m pip install -e ".[dev]"
 .venv\Scripts\python.exe -m pytest -q
 ```

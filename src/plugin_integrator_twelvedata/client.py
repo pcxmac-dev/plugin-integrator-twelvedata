@@ -6,11 +6,11 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Iterator
 
-from liminal_lib.errors import NotEntitled, RateLimited, SourceError
-from liminal_lib.models import Instrument
-from liminal_lib.sources.archive import Archive as _Archive, bounds as _bounds
-from liminal_lib.sources.base import Page
-from liminal_lib.sources.http import PublicClient
+from liminal_libs.errors import NotEntitled, RateLimited, SourceError
+from liminal_libs.models import Instrument
+from liminal_libs.sources.archive import Archive as _Archive, bounds as _bounds
+from liminal_libs.sources.base import Page
+from liminal_libs.sources.http import PublicClient
 
 EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 DAY_MS = 86_400_000
