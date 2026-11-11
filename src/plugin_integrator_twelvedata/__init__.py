@@ -5,10 +5,17 @@ time.
 A Liminal plugin released on its own, registered under the entry point group `liminal.providers` as
 `twelvedata`: one feed, `twelvedata`, a forex feed on its own key and limits like Tiingo's forex feed,
 its own market (`twelvedata`: its data is Twelve Data's own, not a copy of another feed's); `PLUGIN`
-is an instance of `TwelveDataPlugin` on the class contract (plugin API 2.0, liminal-libs 1.3.0:
+is an instance of `TwelveDataPlugin` on the class contract (plugin API 2.2, liminal-libs 1.49.0:
 liminal_libs.sources.plugin.FeedPlugin; what it declares its class attributes, its plan's publication
-delay among them, what it does its methods). It relies on the contract and nothing of the app outside
-it; its version is this distribution's (pyproject.toml), so the instance's version is left empty.
+delay and what it attaches to among them, what it does its methods). It relies on the contract and
+nothing of the app outside it; its version is this distribution's (pyproject.toml), so the instance's
+version is left empty.
+
+What it attaches to (plugin API 2.2, `apis`: the card in apis.py): Twelve Data's REST API, its
+documentation, credits, pricing, status, changelog and specification pages, every section of its
+documentation said used here or not, and its calls with their credits, the three made here first. What
+it learned of the API while it ran it does not say (api_facts, the contract's: nothing): the instance
+holds no run's state, the requests of a run are its client's and the machine's ledgers'.
 
 What Twelve Data's public reference says (twelvedata.com/docs/market-data/time-series, read
 2026-11-02, the one page read while building this; no keyed request was sent): `interval=1min`;
@@ -29,9 +36,9 @@ from __future__ import annotations
 from liminal_libs.config import Tier
 from liminal_libs.freshness import Delay
 from liminal_libs.sources.registry import FeedPlugin, KeyVar, limiter, machine_caps
+from .apis import API, APIS, KEYS  # API: https://api.twelvedata.com, the card's base
 from .client import TwelveDataClient, TwelveDataSource
 
-API = "https://api.twelvedata.com"
 KEY = "TWELVEDATA_API_KEY"  # a free twelvedata.com account's API key, a user environment variable (the Plugins view, the key script)
 # Its free plan, Basic (twelvedata.com/pricing, 2026-11-02): 8 API credits a minute and 800 a day; a
 # time_series request of one symbol is 1 credit (its docs), so requests are counted as credits here.
@@ -55,16 +62,17 @@ def api_key(settings) -> str | None:
 class TwelveDataPlugin(FeedPlugin):
     """The feed as a class (plugin API 2.0): what it declares its class attributes, what it does its
     methods (`build`: its source on a keyed client; `has_keys`, `rate`, `markets`), the rest the
-    contract's defaults."""
+    contract's defaults; what it attaches to (2.2: `apis`)."""
 
-    api = "2.0"  # the contract it needs (the class contract; sources.http, sources.archive, sources.base.Page, delays); its version: the distribution's
+    api = "2.2"  # the contract it needs (the class contract; sources.http, sources.archive, sources.base.Page, delays; its API's card); its version: the distribution's
     name = "twelvedata"
     title = "Twelve Data"
     assets = frozenset({"fx"})
     order = 120
     about = "currency pairs' 1-minute bars from Twelve Data, two years back (a free account key: 8 requests a minute, 800 a day)"
     keys = (KeyVar(KEY),)
-    signup = "twelvedata.com: a free account's API key (its dashboard)"
+    signup = KEYS  # the account's API keys page, a free account's key (the card's console link)
+    apis = APIS  # Twelve Data's REST API (apis.py)
     kind = "vendor"
     archival = False
     tier = TIER

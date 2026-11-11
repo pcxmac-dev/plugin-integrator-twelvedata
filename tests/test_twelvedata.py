@@ -264,6 +264,18 @@ def test_only_minutes_and_only_with_a_key():
     assert (client.asked[0][1]["start_date"], client.asked[0][1]["end_date"]) == ("2026-10-26T00:00:00", "2026-10-27T00:30:00")
 
 
+def own_version(origin: str) -> str:
+    """This distribution's version as the registry read it: its checkout's pyproject.toml when loaded from the
+    workspace's plugin directory, else the installed package's (an editable install's record keeps the version it
+    was installed at until it is installed again)."""
+    if origin.startswith("plugins/"):
+        import tomllib
+        from pathlib import Path
+
+        return tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    return version("plugin-integrator-twelvedata")
+
+
 def test_the_app_loads_it_from_this_package_with_its_own_version():
     registry.reload()
     assert twelvedata.PLUGIN.name == "twelvedata" and not hasattr(twelvedata, "PLUGINS")
@@ -271,11 +283,11 @@ def test_the_app_loads_it_from_this_package_with_its_own_version():
     assert p is not None, dict(registry.errors())
     assert p.origin in {"package: plugin-integrator-twelvedata (plugin_integrator_twelvedata)",
                         "plugins/plugin-integrator-twelvedata (plugin_integrator_twelvedata)"}  # its package, or its checkout in the workspace's plugin directory
-    assert p.version == version("plugin-integrator-twelvedata") and p.api == "2.0"
+    assert p.version == own_version(p.origin) and p.api == "2.2"
     assert registry.api_refusal(p.api) is None and twelvedata.PLUGIN.version == ""
     assert not [why for where, why in registry.errors() if "twelvedata" in where or "twelvedata" in why]
     row = {r["name"]: r for r in registry.menu()}["twelvedata"]
-    assert (row["version"], row["api"], row["archive"], row["assets"]) == (version("plugin-integrator-twelvedata"), "2.0", False, ["fx"])
+    assert (row["version"], row["api"], row["archive"], row["assets"]) == (own_version(p.origin), "2.2", False, ["fx"])
     assert [k["name"] for k in row["keys"]] == [KEY] and row["keys"][0]["secret"] and row["feeds"] == []
     assert registry.plugin_feeds("twelvedata") == ["twelvedata"] and registry.plugin_of("twelvedata") == "twelvedata"
     assert KEY in registry.variables()
@@ -316,13 +328,13 @@ def test_it_keeps_its_facts(monkeypatch):
     assert not twelvedata.PLUGIN.build(load_settings(env={}, env_file=None), 5).has_key
 
 
-def test_it_is_a_class_on_plugin_api_2_0():
-    """The plugin is an instance of its class (plugin API 2.0, liminal-libs 1.3.0): what it declares its class
-    attributes, what it does its methods; the registry loads it as that class."""
+def test_it_is_a_class_on_plugin_api_2_2():
+    """The plugin is an instance of its class (plugin API 2.0, liminal-libs 1.3.0; its API's card since 2.2): what it
+    declares its class attributes, what it does its methods; the registry loads it as that class."""
     assert isinstance(twelvedata.PLUGIN, twelvedata.TwelveDataPlugin) and isinstance(twelvedata.PLUGIN, FeedPlugin)
-    assert twelvedata.PLUGIN.api == "2.0" and not twelvedata.PLUGIN.is_record
+    assert twelvedata.PLUGIN.api == "2.2" and not twelvedata.PLUGIN.is_record
     p = registry.reload()["twelvedata"]
-    assert type(p) is twelvedata.TwelveDataPlugin and p.api == "2.0" and p.name == "twelvedata"
+    assert type(p) is twelvedata.TwelveDataPlugin and p.api == "2.2" and p.name == "twelvedata"
     # the hooks it gives, the rest the contract's defaults
     assert p.gives("build") and p.gives("has_keys") and p.gives("rate") and p.gives("markets")
     assert not p.gives("view") and not p.gives("scan") and not p.gives("carries") and not p.has_settings

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (2026-11-11)
+
+Its API on its page (plugin API 2.2, liminal-libs 1.49.0; the user: "each plugin should reflect the the API its
+attached to, and present links that provide documentation, the plugin interface should more or less contain what it
+already has, BUT, it should also expose more of what the API is about"). The feed declares a card (`apis`, from
+`apis.py`: `TWELVE_DATA`), Twelve Data's REST API as its pages said on 2026-11-11: what it is and for, its address,
+the key's form, its limits (Basic: 8 API credits a minute and 800 a day) and plans, and its pages (the documentation,
+errors, introduction, API credits, pricing, the status page, the news and changelog, the OpenAPI specification, the
+API keys page, the Python SDK, the help center, the terms). Its 15 parts, the documentation's sections, say which 3
+are used here; its 18 calls the 3 made here (`/time_series`, `/forex_pairs`, `/earliest_timestamp`), each with what
+for and what it costs in credits, beside the notable others. `API` is the card's base. `signup` is the API keys
+page's address (a link on the Plugins view). `api_facts` says nothing (the contract's): the plugin holds no run's
+state. Tests: the card names every call the plugin makes and none it does not; every address on it answers (with
+`LIMINAL_VENDOR_PAGES=1`). Nothing it fetches changed. Requires liminal-libs 1.49.0.
+
 ## 0.2.0 (2026-11-03)
 
 Renamed `plugin-integrator-twelvedata` (the package `plugin_integrator_twelvedata`; it was `liminal-plugin-twelvedata`) on 2026-11-03: the naming by system (plugins are `plugin-<app>-<name>`), on liminal-libs 1.4.0 (`liminal_libs`, the library renamed with it).
