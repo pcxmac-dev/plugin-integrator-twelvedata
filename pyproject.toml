@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plugin-integrator-twelvedata"
-version = "0.3.0"  # the plugin's own release (CHANGELOG.md; on release/0.2.0 with Liminal's release); the app shows it on the Plugins view
+version = "0.3.1"  # the plugin's own release (CHANGELOG.md; on release/0.2.0 with Liminal's release); the app shows it on the Plugins view
 description = "Twelve Data for Liminal: currency pairs' 1-minute bars on a free Twelve Data key (8 requests a minute, 800 a day), two years back."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -68,6 +68,15 @@ def checked(body):
     return body
 
 
+def unkeyed(body, key: str | None):
+    """An answer with the key taken out of its words (the top level's text: Note, Information, message), before
+    anything of it can become an error's message: a vendor's own words about a limit can repeat the key it was asked
+    with (the review of 2026-11-21, item 26: the scrub covered only errors of the transport)."""
+    if not key or not isinstance(body, dict):
+        return body
+    return {k: (v.replace(key, "<key>") if isinstance(v, str) else v) for k, v in body.items()}
+
+
 class TwelveDataClient(PublicClient):
     """The keyed client: the key goes as the `apikey` query parameter of every request (how the API
     takes it), to its host alone (the client follows no link elsewhere), and comes out of any error's
@@ -82,7 +91,7 @@ class TwelveDataClient(PublicClient):
         if self.key:
             sent["apikey"] = self.key
         try:
-            return super().get(path_or_url, sent)
+            return unkeyed(super().get(path_or_url, sent), self.key)
         except SourceError as e:
             clean = self.scrubbed(e)
             if clean is e:

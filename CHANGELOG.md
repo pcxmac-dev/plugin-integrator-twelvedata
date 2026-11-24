@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 (2026-11-24)
+
+The review of 2026-11-21 (Monday list item 26), a P1: the key is taken out of the vendor's own words in an answer (`unkeyed`) before any of them become an error's
+message. The scrub covered only errors of the transport; a 200 answer's error message reached the run's log and the kill's reason as it came.
+
 ## 0.3.0 (2026-11-11)
 
 Its API on its page (plugin API 2.2, liminal-libs 1.49.0; the user: "each plugin should reflect the the API its

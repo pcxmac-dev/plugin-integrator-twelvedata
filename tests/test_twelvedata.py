@@ -341,3 +341,12 @@ def test_it_is_a_class_on_plugin_api_2_2():
     # it declares its plan's publication delay itself, the library's row for it still in place
     assert p.delays == {"twelvedata-free": {"fx": Delay("utc_day")}}
     assert p.delays["twelvedata-free"] == freshness.PLAN_DELAYS["twelvedata-free"]
+
+
+def test_the_key_never_reaches_an_error_from_twelve_datas_own_words():
+    """The review of 2026-11-21 (item 26): an error a 200 answer carries became the error's message as it was."""
+    src, _ = _source(FakeResponse(200, {"code": 401, "message": "**apikey** k-SECRET-9 is invalid", "status": "error"}),
+                     key="k-SECRET-9")
+    with pytest.raises(NotEntitled) as raised:
+        next(src.bar_pages("C:EURUSD", date(2026, 10, 26), date(2026, 10, 26), "minute"))
+    assert "k-SECRET-9" not in str(raised.value) and "<key>" in str(raised.value)
